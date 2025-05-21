@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เกมสะกดคำ (ป.5)</title>
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: #fff;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #333;
+    }
+    p {
+      font-size: 18px;
+      color: #555;
+    }
+    button {
+      background: #009688;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px;
+    }
+    button:hover {
+      background: #00796b;
+    }
+    .choice-btn {
+      display: block;
+      width: 80%;
+      margin: 10px auto;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #03a9f4;
+      color: #fff;
+    }
+    .choice-btn:hover {
+      background: #0288d1;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>เกมสะกดคำ</h1>
+    <p>ยินดีต้อนรับสู่เกมสื่อการสอนการสะกดคำสำหรับนักเรียนระดับ ป.5</p>
+    <!-- หน้าจอเริ่มต้น -->
+    <div id="start-screen">
+      <button id="start-btn">เริ่มเกม</button>
+    </div>
+    <!-- หน้าจอคำถาม -->
+    <div id="question-container" class="hidden">
+      <h2 id="question-text"></h2>
+      <div id="choices">
+        <!-- ตัวเลือกคำตอบจะถูกสร้างโดย JavaScript -->
+      </div>
+      <button id="next-btn" class="hidden">คำถัดไป</button>
+    </div>
+    <!-- หน้าจอผลลัพธ์ -->
+    <div id="result-container" class="hidden">
+      <h2>ผลลัพธ์ของคุณ</h2>
+      <p id="score-text"></p>
+      <button id="restart-btn">เล่นอีกครั้ง</button>
+    </div>
+  </div>
+
+  <script>
+    // ข้อมูลคำถามและตัวเลือก
+    const questions = [
+      {
+        question: "คำว่า 'แมว' สะกดอย่างไร?",
+        choices: ["แมว", "แม้ว", "แมวจ"],
+        answer: "แมว"
+      },
+      {
+        question: "คำว่า 'ผลไม้' สะกดอย่างไร?",
+        choices: ["ผลไม้", "ผลไม่", "ผลไหม่"],
+        answer: "ผลไม้"
+      },
+      {
+        question: "คำว่า 'นักเรียน' สะกดอย่างไร?",
+        choices: ["นกเรียน", "นักเรียน", "นักเรียน"],
+        answer: "นักเรียน"
+      },
+      {
+        question: "คำว่า 'โรงเรียน' สะกดอย่างไร?",
+        choices: ["โรงเรียน", "โรงเรีย", "ห้องเรียน"],
+        answer: "โรงเรียน"
+      },
+      {
+        question: "คำว่า 'ครู' สะกดอย่างไร?",
+        choices: ["ครู", "ครุ", "ครู๊"],
+        answer: "ครู"
+      }
+    ];
+
+    // ตัวแปรสำหรับเก็บสถานะของเกม
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    // ดึง element ต่าง ๆ จาก DOM
+    const startBtn = document.getElementById("start-btn");
+    const restartBtn = document.getElementById("restart-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const questionContainer = document.getElementById("question-container");
+    const questionText = document.getElementById("question-text");
+    const choicesContainer = document.getElementById("choices");
+    const startScreen = document.getElementById("start-screen");
+    const resultContainer = document.getElementById("result-container");
+    const scoreText = document.getElementById("score-text");
+
+    // ตั้งค่า Event Listener
+    startBtn.addEventListener("click", startGame);
+    restartBtn.addEventListener("click", restartGame);
+    nextBtn.addEventListener("click", () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        showQuestion();
+      } else {
+        showScore();
+      }
+    });
+
+    function startGame() {
+      startScreen.classList.add("hidden");
+      questionContainer.classList.remove("hidden");
+      currentQuestionIndex = 0;
+      score = 0;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      nextBtn.classList.add("hidden");
+      // ล้างตัวเลือกคำตอบเก่า
+      choicesContainer.innerHTML = "";
+      // แสดงคำถามปัจจุบัน
+      const currentQuestion = questions[currentQuestionIndex];
+      questionText.textContent = currentQuestion.question;
+
+      // สร้างปุ่มตัวเลือกคำตอบในแต่ละตัวเลือก
+      currentQuestion.choices.forEach(choice => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.classList.add("choice-btn");
+        btn.addEventListener("click", () => selectAnswer(choice, btn));
+        choicesContainer.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(choice, btn) {
+      // ปิดการกดตัวเลือกทั้งหมดย่อมภายหลังจากมีการเลือกคำตอบ
+      const allBtns = document.querySelectorAll(".choice-btn");
+      allBtns.forEach(button => button.disabled = true);
+
+      const currentQuestion = questions[currentQuestionIndex];
+      if (choice === currentQuestion.answer) {
+        btn.style.backgroundColor = "#4CAF50"; // สีเขียวสำหรับคำตอบที่ถูกต้อง
+        score++;
+      } else {
+        btn.style.backgroundColor = "#f44336"; // สีแดงสำหรับคำตอบที่ผิด
+        // แสดงคำตอบที่ถูกต้อง
+        allBtns.forEach(button => {
+          if (button.textContent === currentQuestion.answer) {
+            button.style.backgroundColor = "#4CAF50"; 
+          }
+        });
+      }
+      nextBtn.classList.remove("hidden");
+    }
+
+    function showScore() {
+      questionContainer.classList.add("hidden");
+      resultContainer.classList.remove("hidden");
+      scoreText.textContent = "คุณได้ " + score + " จาก " + questions.length + " คะแนน";
+    }
+
+    function restartGame() {
+      resultContainer.classList.add("hidden");
+      startScreen.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
